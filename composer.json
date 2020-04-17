@@ -1,0 +1,57 @@
+{
+  "description": "PHP access to Unicode Character Database (UCD)",
+  "name": "remorhaz/ucd",
+  "homepage": "https://github.com/remorhaz/php-ucd",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Edward Surov",
+      "email": "zoohie@gmail.com",
+      "role": "Developer"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Remorhaz\\UCD\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Remorhaz\\UCD\\Test\\": "tests/",
+      "Remorhaz\\UCD\\Tool\\": [
+        "tools/src/",
+        "tools/bin/"
+      ],
+      "Remorhaz\\UCD\\Tool\\Test\\": "tools/tests/"
+    }
+  },
+  "require": {
+    "php": "^7.3",
+    "remorhaz/int-rangesets": "^0.1"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^9.1",
+    "infection/infection": "^0.16.2",
+    "squizlabs/php_codesniffer": "^3.5",
+    "vimeo/psalm": "^3.11"
+  },
+  "scripts": {
+    "build": [
+      "php tools/bin/PropertyBuilderApp.php",
+      "vendor/bin/phpcbf -p src/Ranges/ config/ranges.php; if [ $? -eq 1 ]; then exit 0; fi"
+    ],
+    "test-cs": "vendor/bin/phpcs -sp",
+    "test-unit": "vendor/bin/phpunit --coverage-xml=build/logs/coverage-xml --log-junit=build/logs/junit.xml",
+    "test-psalm": "vendor/bin/psalm --threads=4",
+    "test": [
+      "@test-cs",
+      "@test-unit",
+      "@test-psalm"
+    ],
+    "infection": [
+      "@test-unit",
+      "mkdir -p build/logs/infection",
+      "vendor/bin/infection --threads=4 --coverage=build/logs --no-progress --skip-initial-tests"
+    ]
+  }
+}

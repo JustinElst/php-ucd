@@ -1,0 +1,12 @@
+<?php
+
+/** @noinspection PhpUnhandledExceptionInspection */
+
+declare(strict_types=1);
+
+namespace Remorhaz\UCD\Tool\Properties;
+
+use Remorhaz\IntRangeSets\RangeSet;
+
+/** phpcs:disable Generic.Files.LineLength.TooLong */
+return RangeSet::createUnsafe(...RangeSet::importRanges([0xc80, 0xc8c], [0xc8e, 0xc90], [0xc92, 0xca8], [0xcaa, 0xcb3], [0xcb5, 0xcb9], [0xcbc, 0xcc4], [0xcc6, 0xcc8], [0xcca, 0xccd], [0xcd5, 0xcd6], [0xcde], [0xce0, 0xce3], [0xce6, 0xcef], [0xcf1, 0xcf2]));
