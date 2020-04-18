@@ -27,6 +27,7 @@
   },
   "require": {
     "php": "^7.3",
+    "nikic/php-parser": "^4.4",
     "remorhaz/int-rangesets": "^0.1"
   },
   "require-dev": {
