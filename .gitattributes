@@ -1,1 +1,1 @@
-/tools export-ignores
+/tools/** export-ignore
