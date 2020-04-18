@@ -1,7 +1,7 @@
 # Contributing to `remorhaz/ucd`
 
 # Building generated code
-To rebuild generated data
+Run `composer build` to re-build generated code from source UCD files.  
 
 # Keep a changelog
 Please don't forget to update [CHANGELOG.md](./CHANGELOG.md) when you're making some changes users should know about.
