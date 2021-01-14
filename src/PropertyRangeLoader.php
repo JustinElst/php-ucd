@@ -20,7 +20,7 @@ final class PropertyRangeLoader implements PropertyRangeLoaderInterface
 
     /**
      * @var string[]
-     * @psalm-var array<string,mixed>
+     * @psalm-var array<string, mixed>
      */
     private $index;
 
@@ -31,16 +31,16 @@ final class PropertyRangeLoader implements PropertyRangeLoaderInterface
 
     public static function create(): self
     {
-        /** @psalm-var array<string,string> $index */
+        /** @psalm-var array<string, string> $index */
         $index = require __DIR__ . '/../config/ranges.php';
 
         return new self(__DIR__, $index);
     }
 
     /**
-     * @param string $path
-     * @param array  $index
-     * @psalm-param array<string,string> $index
+     * @param string                     $path
+     * @param array                      $index
+     * @psalm-param array<string, string> $index
      */
     public function __construct(string $path, array $index)
     {
