@@ -4,31 +4,31 @@ declare(strict_types=1);
 
 namespace Remorhaz\UCD\Tool;
 
+use Closure;
 use Iterator;
 use IteratorAggregate;
 use Remorhaz\IntRangeSets\Range;
+use Remorhaz\IntRangeSets\RangeInterface;
 use SplFileObject;
 use Throwable;
 
+/**
+ * @template-implements IteratorAggregate<string, RangeInterface>
+ */
 final class PropertiesRangeIterator implements IteratorAggregate
 {
+    private Closure $onProgress;
 
-    /**
-     * @var SplFileObject
-     */
-    private $file;
-
-    /**
-     * @var callable
-     */
-    private $onProgress;
-
-    public function __construct(SplFileObject $file, callable $onProgress)
-    {
-        $this->file = $file;
-        $this->onProgress = $onProgress;
+    public function __construct(
+        private SplFileObject $file,
+        callable $onProgress,
+    ) {
+        $this->onProgress = Closure::fromCallable($onProgress);
     }
 
+    /**
+     * @return Iterator<string, RangeInterface>
+     */
     public function getIterator(): Iterator
     {
         while (!$this->file->eof()) {
@@ -44,14 +44,19 @@ final class PropertiesRangeIterator implements IteratorAggregate
 
     private function fetchNextLine(SplFileObject $file): ?string
     {
-        $line = $file->fgets();
-        if (false === $line) {
-            throw new Exception\LineNotReadException($file->getFilename());
+        try {
+            $line = $file->fgets();
+        } catch (Throwable $e) {
+            throw new Exception\LineNotReadException($file->getFilename(), $e);
         }
 
         return '' == $line ? null : $line;
     }
 
+    /**
+     * @param string $line
+     * @return Iterator<string, RangeInterface>
+     */
     private function fetchPropertyRange(string $line): Iterator
     {
         $dataWithComment = explode('#', $line, 2);
@@ -60,8 +65,8 @@ final class PropertiesRangeIterator implements IteratorAggregate
             return;
         }
         $rangeWithProp = explode(';', $data);
-        $unSplitRange = trim($rangeWithProp[0] ?? null);
-        $prop = trim($rangeWithProp[1] ?? null);
+        $unSplitRange = trim($rangeWithProp[0] ?? '');
+        $prop = trim($rangeWithProp[1] ?? '');
         if (!isset($unSplitRange, $prop)) {
             throw new Exception\InvalidLineException($line);
         }

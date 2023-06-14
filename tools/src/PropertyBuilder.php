@@ -8,6 +8,7 @@ use PhpParser\BuilderFactory;
 use PhpParser\Comment\Doc;
 use PhpParser\Node\Arg;
 use PhpParser\Node\Expr\Array_;
+use PhpParser\Node\Expr\ArrayItem;
 use PhpParser\Node\Scalar\LNumber;
 use PhpParser\Node\Stmt\Declare_;
 use PhpParser\Node\Stmt\DeclareDeclare;
@@ -18,47 +19,40 @@ use Remorhaz\IntRangeSets\Range;
 use Remorhaz\IntRangeSets\RangeInterface;
 use Remorhaz\IntRangeSets\RangeSet;
 use Remorhaz\IntRangeSets\RangeSetInterface;
+use Safe;
 use SplFileObject;
 use Throwable;
 
 use function array_diff;
 use function array_keys;
 use function array_merge;
+use function array_values;
 use function count;
 use function var_export;
 
 final class PropertyBuilder
 {
+    /**
+     * @var array<string, RangeSetInterface>
+     */
+    private array $rangeSets = [];
 
     /**
-     * @var RangeSetInterface[]
+     * @var list<string>
      */
-    private $rangeSets = [];
+    private array $scripts = [];
+
+    private BuilderFactory $phpBuilder;
 
     /**
-     * @var string[]
+     * @var array<string, list<RangeInterface>>
      */
-    private $scripts = [];
+    private array $rangeBuffer = [];
 
-    /**
-     * @var BuilderFactory
-     */
-    private $phpBuilder;
-
-    /**
-     * @var PrettyPrinterAbstract
-     */
-    private $printer;
-
-    /**
-     * @var RangeInterface[][]
-     */
-    private $rangeBuffer = [];
-
-    public function __construct(PrettyPrinterAbstract $printer)
-    {
+    public function __construct(
+        private PrettyPrinterAbstract $printer,
+    ) {
         $this->phpBuilder = new BuilderFactory();
-        $this->printer = $printer;
     }
 
     public function parseUnicodeData(SplFileObject $file, callable $onProgress): void
@@ -72,7 +66,7 @@ final class PropertyBuilder
     {
         $otherProperties = array_keys($this->rangeBuffer);
         $this->parseProperties($file, $onProgress);
-        $this->scripts = array_diff(array_keys($this->rangeBuffer), $otherProperties);
+        $this->scripts = array_values(array_diff(array_keys($this->rangeBuffer), $otherProperties));
     }
 
     public function parseProperties(SplFileObject $file, callable $onProgress): void
@@ -84,7 +78,7 @@ final class PropertyBuilder
 
     private function addRangeToBuffer(string $prop, RangeInterface ...$ranges): void
     {
-        $this->rangeBuffer[$prop] = array_merge($this->rangeBuffer[$prop] ?? [], $ranges);
+        $this->rangeBuffer[$prop] = array_merge($this->rangeBuffer[$prop] ?? [], array_values($ranges));
     }
 
     public function getRangeBufferSize(): int
@@ -159,8 +153,8 @@ final class PropertyBuilder
             $knownRanges = array_merge($knownRanges, $this->getRangeSet($prop)->getRanges());
             $onProgress();
         }
+        $targetProp = 'Unknown';
         try {
-            $targetProp = 'Unknown';
             $knownRangeSet = RangeSet::create(...$knownRanges);
             $onProgress();
             $unknownRanges = $knownRangeSet
@@ -187,24 +181,21 @@ final class PropertyBuilder
 
     private function getRangeSet(string $prop): RangeSetInterface
     {
-        if (isset($this->rangeSets[$prop])) {
-            return $this->rangeSets[$prop];
-        }
-
-        throw new Exception\RangeSetNotFoundException($prop);
+        return $this->rangeSets[$prop]
+            ?? throw new Exception\RangeSetNotFoundException($prop);
     }
 
     public function writeFiles(string $targetIndexRootDir, string $targetRootDir, callable $onProgress): void
     {
         $fileIndex = [];
         foreach ($this->rangeSets as $prop => $rangeSet) {
-            $baseName = "/Ranges/{$prop}.php";
+            $baseName = "/Ranges/$prop.php";
             $fileName = $targetRootDir . $baseName;
             try {
                 $code = $this->buildPropertyFile($rangeSet);
-                \Safe\file_put_contents($fileName, $code);
+                Safe\file_put_contents($fileName, $code);
             } catch (Throwable $e) {
-                throw new Exception\FileNotWrittenException($fileName);
+                throw new Exception\FileNotWrittenException($fileName, $e);
             }
             $fileIndex[$prop] = $baseName;
             $onProgress();
@@ -212,9 +203,9 @@ final class PropertyBuilder
         $fileName = $targetIndexRootDir . "/ranges.php";
         try {
             $code = $this->buildIndexFile($fileIndex);
-            \Safe\file_put_contents($fileName, $code);
+            Safe\file_put_contents($fileName, $code);
         } catch (Throwable $e) {
-            throw new Exception\FileNotWrittenException($fileName);
+            throw new Exception\FileNotWrittenException($fileName, $e);
         }
         $onProgress();
     }
@@ -223,7 +214,7 @@ final class PropertyBuilder
     {
         $array = var_export($index, true);
 
-        return "<?php\n\nreturn {$array};\n";
+        return "<?php\n\nreturn $array;\n";
     }
 
     private function buildPropertyFile(RangeSetInterface $rangeSet): string
@@ -243,11 +234,11 @@ final class PropertyBuilder
             $rangeFinish = $range->getFinish();
             $phpRangeStart = $this->phpBuilder->val($rangeStart);
             $phpRangeStart->setAttribute('kind', LNumber::KIND_HEX);
-            $phpRangeArgs = [$phpRangeStart];
+            $phpRangeArgs = [new ArrayItem($phpRangeStart)];
             if ($rangeStart != $rangeFinish) {
                 $phpRangeFinish = $this->phpBuilder->val($rangeFinish);
                 $phpRangeFinish->setAttribute('kind', LNumber::KIND_HEX);
-                $phpRangeArgs[] = $phpRangeFinish;
+                $phpRangeArgs[] = new ArrayItem($phpRangeFinish);
             }
             $phpRanges[] = new Array_($phpRangeArgs, ['kind' => Array_::KIND_SHORT]);
         }
@@ -258,7 +249,7 @@ final class PropertyBuilder
             $this->phpBuilder->staticCall(
                 $rangeSetClass->getShortName(),
                 'createUnsafe',
-                [new Arg($import, false, true)]
+                [new Arg($import, false, true)],
             )
         );
         $phpReturn->setDocComment(new Doc('/** phpcs:disable Generic.Files.LineLength.TooLong */'));

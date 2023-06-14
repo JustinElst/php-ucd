@@ -12,22 +12,10 @@ use function is_string;
 
 final class PropertyRangeLoader implements PropertyRangeLoaderInterface
 {
-
     /**
-     * @var string
+     * @var array<string, RangeSetInterface>
      */
-    private $path;
-
-    /**
-     * @var string[]
-     * @psalm-var array<string, mixed>
-     */
-    private $index;
-
-    /**
-     * @var RangeSetInterface[]
-     */
-    private $cache = [];
+    private array $cache = [];
 
     public static function create(): self
     {
@@ -38,58 +26,45 @@ final class PropertyRangeLoader implements PropertyRangeLoaderInterface
     }
 
     /**
-     * @param string                     $path
-     * @param array                      $index
-     * @psalm-param array<string, string> $index
+     * @param string               $path
+     * @param array<string, mixed> $index
      */
-    public function __construct(string $path, array $index)
-    {
-        $this->path = $path;
-        $this->index = $index;
+    public function __construct(
+        private string $path,
+        private array $index,
+    ) {
     }
 
     public function getRangeSet(string $propertyName): RangeSetInterface
     {
-        if (!isset($this->cache[$propertyName])) {
-            $this->cache[$propertyName] = $this->loadRangeSet($propertyName);
-        }
-
-        return $this->cache[$propertyName];
+        return $this->cache[$propertyName] ??= $this->loadRangeSet($propertyName);
     }
 
     private function loadRangeSet(string $propertyName): RangeSetInterface
     {
-        if (!isset($this->index[$propertyName])) {
-            throw new Exception\PropertyRangeSetNotFoundException($propertyName);
-        }
-
-        /** @var mixed $file */
-        $file = $this->index[$propertyName];
+        $file = $this->index[$propertyName]
+            ?? throw new Exception\PropertyRangeSetNotFoundException($propertyName);
         if (!is_string($file)) {
             throw new Exception\InvalidPropertyConfigException($propertyName, $file);
         }
         $fileName = $this->path . $file;
         error_clear_last();
         /**
-         * @noinspection   PhpIncludeInspection
          * @psalm-suppress UnresolvableInclude
          * @var RangeSetInterface|false $rangeSet
          */
         $rangeSet = @include $fileName;
         if (false === $rangeSet) {
             $lastError = error_get_last();
-            if (isset($lastError)) {
-                throw new Exception\PropertyFileNotLoadedException(
-                    $propertyName,
-                    $fileName,
-                    $lastError['message'] ?? null
-                );
-            }
-        }
-        if ($rangeSet instanceof RangeSetInterface) {
-            return $rangeSet;
+            throw new Exception\PropertyFileNotLoadedException(
+                $propertyName,
+                $fileName,
+                $lastError['message'] ?? null,
+            );
         }
 
-        throw new Exception\InvalidPropertyRangeSetException($propertyName, $fileName, $rangeSet);
+        return $rangeSet instanceof RangeSetInterface
+            ? $rangeSet
+            : throw new Exception\InvalidPropertyRangeSetException($propertyName, $fileName, $rangeSet);
     }
 }

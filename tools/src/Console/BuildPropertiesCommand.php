@@ -9,6 +9,7 @@ use PhpParser\PrettyPrinter\Standard;
 use Remorhaz\UCD\Tool\PropertyBuilder;
 use RuntimeException;
 use SplFileObject;
+use Safe;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Helper\ProgressIndicator;
@@ -18,11 +19,9 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Throwable;
 
 use function is_string;
-use function Safe\realpath;
 
 final class BuildPropertiesCommand extends Command
 {
-
     private const OPTION_TARGET_ROOT_PATH = 'target-root-path';
     private const OPTION_TARGET_INDEX_ROOT_PATH = 'target-index-root-path';
     private const OPTION_SOURCE_ROOT_PATH = 'source-root-path';
@@ -33,7 +32,7 @@ final class BuildPropertiesCommand extends Command
 
     protected static $defaultName = 'build';
 
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setDescription('Makes Unicode properties available to regular expressions')
@@ -81,7 +80,7 @@ final class BuildPropertiesCommand extends Command
                 null,
                 InputOption::VALUE_REQUIRED,
                 'Location of DerivedCoreProperties.txt (relative to source root path, with heading slash)',
-                '/DerivedCoreProperties.txt'
+                '/DerivedCoreProperties.txt',
             );
     }
 
@@ -89,7 +88,7 @@ final class BuildPropertiesCommand extends Command
     {
         return $this->getRealPath(
             __DIR__ . '/../../../src',
-            'Default target root path not detected'
+            'Default target root path not detected',
         );
     }
 
@@ -97,14 +96,14 @@ final class BuildPropertiesCommand extends Command
     {
         return $this->getRealPath(
             __DIR__ . '/../../../config',
-            'Default target index file root path not detected'
+            'Default target index file root path not detected',
         );
     }
 
     private function getRealPath(string $path, string $errorMessage): string
     {
         try {
-            return realpath($path);
+            return Safe\realpath($path);
         } catch (Throwable $e) {
             throw new LogicException($errorMessage, 0, $e);
         }
@@ -114,13 +113,13 @@ final class BuildPropertiesCommand extends Command
     {
         return $this->getRealPath(
             __DIR__ . '/../../data',
-            'Default source root path not detected'
+            'Default source root path not detected',
         );
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $output->writeln($this->getApplication()->getName());
+        $output->writeln($this->getApplication()?->getName() ?? 'unknown');
         $propertyBuilder = new PropertyBuilder(new Standard());
         $this->parseUnicodeData($propertyBuilder, $input, $output);
         $this->parseScripts($propertyBuilder, $input, $output);
@@ -134,7 +133,7 @@ final class BuildPropertiesCommand extends Command
     private function parseUnicodeData(
         PropertyBuilder $propertyBuilder,
         InputInterface $input,
-        OutputInterface $output
+        OutputInterface $output,
     ): void {
         $progressBar = new ProgressBar($output);
         $progressIndicator = new ProgressIndicator($output);
@@ -153,7 +152,7 @@ final class BuildPropertiesCommand extends Command
         $this->fetchRangeSets($output, $propertyBuilder, $progressBar);
 
         $progressIndicator->start('Building UnicodeData derivatives...');
-        $onBuildProgress = function () use ($progressIndicator) {
+        $onBuildProgress = function () use ($progressIndicator): void {
             $progressIndicator->advance();
         };
         $propertyBuilder->buildUnicodeDataDerivatives($onBuildProgress);
@@ -164,7 +163,7 @@ final class BuildPropertiesCommand extends Command
     private function fetchRangeSets(
         OutputInterface $output,
         PropertyBuilder $propertyBuilder,
-        ProgressBar $progressBar
+        ProgressBar $progressBar,
     ): void {
         $output->writeln(' Creating range sets from buffer...');
         $bufferSize = $propertyBuilder->getRangeBufferSize();
@@ -176,40 +175,40 @@ final class BuildPropertiesCommand extends Command
         $propertyBuilder->fetchBufferedRangeSets($onFetchProgress);
         $progressBar->finish();
         $progressBar->clear();
-        $output->writeln(" {$bufferSize} range sets created");
+        $output->writeln(" $bufferSize range sets created");
     }
 
     private function getSourceRootPath(InputInterface $input): string
     {
         $optionName = self::OPTION_SOURCE_ROOT_PATH;
+        /** @psalm-var mixed $sourceRootPath */
         $sourceRootPath = $input->getOption($optionName);
-        if (is_string($sourceRootPath)) {
-            return $sourceRootPath;
-        }
 
-        throw new RuntimeException("Option --{$optionName} must be a string");
+        return is_string($sourceRootPath)
+            ? $sourceRootPath
+            : throw new RuntimeException("Option --$optionName must be a string");
     }
 
     private function getTargetRootPath(InputInterface $input): string
     {
         $optionName = self::OPTION_TARGET_ROOT_PATH;
+        /** @psalm-var mixed $targetRootPath */
         $targetRootPath = $input->getOption($optionName);
-        if (is_string($targetRootPath)) {
-            return $targetRootPath;
-        }
 
-        throw new RuntimeException("Option --{$optionName} must be a string");
+        return is_string($targetRootPath)
+            ? $targetRootPath
+            : throw new RuntimeException("Option --$optionName must be a string");
     }
 
     private function getTargetIndexRootPath(InputInterface $input): string
     {
         $optionName = self::OPTION_TARGET_INDEX_ROOT_PATH;
+        /** @psalm-var mixed $targetRootPath */
         $targetRootPath = $input->getOption($optionName);
-        if (is_string($targetRootPath)) {
-            return $targetRootPath;
-        }
 
-        throw new RuntimeException("Option --{$optionName} must be a string");
+        return is_string($targetRootPath)
+            ? $targetRootPath
+            : throw new RuntimeException("Option --$optionName must be a string");
     }
 
     private function getSourceUnicodeData(InputInterface $input): string
@@ -234,18 +233,18 @@ final class BuildPropertiesCommand extends Command
 
     private function getSourceFile(string $optionName, InputInterface $input): string
     {
+        /** @psalm-var mixed $sourceScripts */
         $sourceScripts = $input->getOption($optionName);
-        if (is_string($sourceScripts)) {
-            return $this->getSourceRootPath($input) . $sourceScripts;
-        }
 
-        throw new RuntimeException("Option --{$optionName} must be a string");
+        return is_string($sourceScripts)
+            ? $this->getSourceRootPath($input) . $sourceScripts
+            : throw new RuntimeException("Option --$optionName must be a string");
     }
 
     private function parseScripts(
         PropertyBuilder $propertyBuilder,
         InputInterface $input,
-        OutputInterface $output
+        OutputInterface $output,
     ): void {
         $progressBar = new ProgressBar($output);
         $progressIndicator = new ProgressIndicator($output);
@@ -265,7 +264,7 @@ final class BuildPropertiesCommand extends Command
         $this->fetchRangeSets($output, $propertyBuilder, $progressBar);
 
         $progressIndicator->start('Building Scripts derivatives...');
-        $onBuildProgress = function () use ($progressIndicator) {
+        $onBuildProgress = function () use ($progressIndicator): void {
             $progressIndicator->advance();
         };
         $propertyBuilder->buildScriptsDerivatives($onBuildProgress);
@@ -276,7 +275,7 @@ final class BuildPropertiesCommand extends Command
     private function parsePropList(
         PropertyBuilder $propertyBuilder,
         InputInterface $input,
-        OutputInterface $output
+        OutputInterface $output,
     ): void {
         $progressBar = new ProgressBar($output);
 
@@ -297,7 +296,7 @@ final class BuildPropertiesCommand extends Command
     private function parseDerivedCoreProperties(
         PropertyBuilder $propertyBuilder,
         InputInterface $input,
-        OutputInterface $output
+        OutputInterface $output,
     ): void {
         $progressBar = new ProgressBar($output);
 
@@ -318,7 +317,7 @@ final class BuildPropertiesCommand extends Command
     private function buildFiles(
         PropertyBuilder $propertyBuilder,
         InputInterface $input,
-        OutputInterface $output
+        OutputInterface $output,
     ): void {
         $progressBar = new ProgressBar($output);
 
@@ -331,7 +330,7 @@ final class BuildPropertiesCommand extends Command
         $propertyBuilder->writeFiles(
             $this->getTargetIndexRootPath($input),
             $this->getTargetRootPath($input),
-            $onWriteProgress
+            $onWriteProgress,
         );
         $progressBar->finish();
         $progressBar->clear();

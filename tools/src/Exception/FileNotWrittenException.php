@@ -9,16 +9,11 @@ use Throwable;
 
 final class FileNotWrittenException extends RuntimeException implements ExceptionInterface
 {
-
-    /**
-     * @var string
-     */
-    private $fileName;
-
-    public function __construct(string $fileName, Throwable $previous = null)
-    {
-        $this->fileName = $fileName;
-        parent::__construct("Failed to write file: {$this->fileName}", 0, $previous);
+    public function __construct(
+        private string $fileName,
+        ?Throwable $previous = null,
+    ) {
+        parent::__construct("Failed to write file: $this->fileName", 0, $previous);
     }
 
     public function getFileName(): string

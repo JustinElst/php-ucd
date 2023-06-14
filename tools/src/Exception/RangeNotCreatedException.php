@@ -9,8 +9,7 @@ use Throwable;
 
 final class RangeNotCreatedException extends RuntimeException implements ExceptionInterface
 {
-
-    public function __construct(Throwable $previous = null)
+    public function __construct(?Throwable $previous = null)
     {
         parent::__construct("Failed to create range", 0, $previous);
     }

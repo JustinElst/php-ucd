@@ -14,35 +14,12 @@ use function is_object;
 
 final class InvalidPropertyRangeSetException extends UnexpectedValueException implements ExceptionInterface
 {
-
-    /**
-     * @var string
-     */
-    private $propertyName;
-
-    /**
-     * @var string
-     */
-    private $propertyFile;
-
-    /**
-     * @var mixed
-     */
-    private $rangeSet;
-
-    /**
-     * InvalidPropertyRangeSetException constructor.
-     *
-     * @param string         $propertyName
-     * @param string         $propertyFile
-     * @param mixed          $rangeSet
-     * @param Throwable|null $previous
-     */
-    public function __construct(string $propertyName, string $propertyFile, $rangeSet, Throwable $previous = null)
-    {
-        $this->propertyName = $propertyName;
-        $this->propertyFile = $propertyFile;
-        $this->rangeSet = $rangeSet;
+    public function __construct(
+        private string $propertyName,
+        private string $propertyFile,
+        private mixed $rangeSet,
+        ?Throwable $previous = null,
+    ) {
         parent::__construct($this->buildMessage(), 0, $previous);
     }
 
@@ -54,8 +31,8 @@ final class InvalidPropertyRangeSetException extends UnexpectedValueException im
         $expectedType = RangeSetInterface::class;
 
         return
-            "Invalid range set loaded from {$this->propertyFile} for Unicode property '{$this->propertyName}':\n" .
-            "{$actualType} instead of {$expectedType}";
+            "Invalid range set loaded from $this->propertyFile for Unicode property '$this->propertyName':\n" .
+            "$actualType instead of $expectedType";
     }
 
     public function getPropertyName(): string
@@ -68,10 +45,7 @@ final class InvalidPropertyRangeSetException extends UnexpectedValueException im
         return $this->propertyFile;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getRangeSet()
+    public function getRangeSet(): mixed
     {
         return $this->rangeSet;
     }

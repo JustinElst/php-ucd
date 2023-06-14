@@ -4,42 +4,48 @@ declare(strict_types=1);
 
 namespace Remorhaz\UCD\Tool;
 
+use Closure;
 use Iterator;
 use IteratorAggregate;
 use Remorhaz\IntRangeSets\Range;
 use Remorhaz\IntRangeSets\RangeInterface;
+use Safe;
 use SplFileObject;
 use Throwable;
 
 use function strlen;
 
+/**
+ * @template-implements IteratorAggregate<string, RangeInterface>
+ */
 final class UnicodeDataRangeIterator implements IteratorAggregate
 {
+    private Closure $onProgress;
 
-    private $file;
+    private ?int $code = null;
 
-    private $onProgress;
+    private ?string $name = null;
 
-    private $code;
+    private ?string $prop = null;
 
-    private $name;
+    private ?int $lastCode = null;
 
-    private $prop;
+    private ?string $lastProp = null;
 
-    private $lastCode;
+    private ?int $rangeStart = null;
 
-    private $lastProp;
+    private array $namedStarts = [];
 
-    private $rangeStart;
-
-    private $namedStarts = [];
-
-    public function __construct(SplFileObject $file, callable $onProgress)
-    {
-        $this->file = $file;
-        $this->onProgress = $onProgress;
+    public function __construct(
+        private SplFileObject $file,
+        callable $onProgress,
+    ) {
+        $this->onProgress = Closure::fromCallable($onProgress);
     }
 
+    /**
+     * @return Iterator<string, RangeInterface>
+     */
     public function getIterator(): Iterator
     {
         while (!$this->file->eof()) {
@@ -48,7 +54,7 @@ final class UnicodeDataRangeIterator implements IteratorAggregate
                 continue;
             }
             $range = $this->fetchUnicodeDataRange($line);
-            if (isset($range)) {
+            if (isset($range, $this->lastProp)) {
                 yield $this->lastProp => $range;
             }
 
@@ -61,14 +67,20 @@ final class UnicodeDataRangeIterator implements IteratorAggregate
 
     private function fetchNextLine(SplFileObject $file): ?string
     {
-        $line = $file->fgets();
-        if (false === $line) {
-            throw new Exception\LineNotReadException($file->getFilename());
+        try {
+            $line = $file->fgets();
+        } catch (Throwable $e) {
+            throw new Exception\LineNotReadException($file->getFilename(), $e);
         }
 
         return '' == $line ? null : $line;
     }
 
+    /**
+     * @psalm-assert !null $this->code
+     * @psalm-assert !null $this->name
+     * @psalm-assert !null $this->prop
+     */
     private function parseUnicodeDataLineLine(string $line): void
     {
         $splitLine = explode(';', $line);
@@ -78,7 +90,7 @@ final class UnicodeDataRangeIterator implements IteratorAggregate
         if (!isset($codeHex, $name, $prop)) {
             throw new Exception\InvalidLineException($line);
         }
-        $this->code = hexdec($codeHex);
+        $this->code = (int) hexdec($codeHex);
         $this->name = $name;
         $this->prop = $prop;
     }
@@ -97,7 +109,7 @@ final class UnicodeDataRangeIterator implements IteratorAggregate
 
         if (isset($lastName)) {
             if (
-                !isset($this->namedStarts[$lastName]) ||
+                !isset($this->namedStarts[$lastName], $this->lastCode) ||
                 isset($this->rangeStart) ||
                 $this->lastCode !== $this->namedStarts[$lastName]
             ) {
@@ -120,15 +132,19 @@ final class UnicodeDataRangeIterator implements IteratorAggregate
         return $range;
     }
 
+    /**
+     * @param string $name
+     * @return array{string|null, string|null}
+     */
     private function parseRangeBoundary(string $name): array
     {
         try {
-            $isFirst = 1 === \Safe\preg_match('#^<(.+), First>$#', $name, $matches);
+            $isFirst = 1 === Safe\preg_match('#^<(.+), First>$#', $name, $matches);
             if ($isFirst) {
                 return [$matches[1] ?? null, null];
             }
 
-            $isLast = 1 === \Safe\preg_match('#^<(.+), Last>$#', $name, $matches);
+            $isLast = 1 === Safe\preg_match('#^<(.+), Last>$#', $name, $matches);
 
             return $isLast
                 ? [null, $matches[1] ?? null]

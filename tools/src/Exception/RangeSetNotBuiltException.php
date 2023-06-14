@@ -9,17 +9,12 @@ use Throwable;
 
 final class RangeSetNotBuiltException extends LogicException implements ExceptionInterface
 {
-
-    /**
-     * @var string
-     */
-    private $propertyName;
-
-    public function __construct(string $propertyName, Throwable $previous = null)
-    {
-        $this->propertyName = $propertyName;
+    public function __construct(
+        private string $propertyName,
+        ?Throwable $previous = null,
+    ) {
         parent::__construct(
-            "Failed to build range set for property '{$this->propertyName}'",
+            "Failed to build range set for property '$this->propertyName'",
             0,
             $previous
         );

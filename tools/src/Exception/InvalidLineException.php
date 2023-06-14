@@ -9,16 +9,11 @@ use Throwable;
 
 final class InvalidLineException extends RuntimeException implements ExceptionInterface
 {
-
-    /**
-     * @var string
-     */
-    private $lineText;
-
-    public function __construct(string $lineText, Throwable $previous = null)
-    {
-        $this->lineText = $lineText;
-        parent::__construct("Invalid line format: {$this->lineText}", 0, $previous);
+    public function __construct(
+        private string $lineText,
+        ?Throwable $previous = null,
+    ) {
+        parent::__construct("Invalid line format: $this->lineText", 0, $previous);
     }
 
     public function getLineText(): string

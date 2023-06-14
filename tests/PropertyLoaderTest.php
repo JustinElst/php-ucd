@@ -19,7 +19,6 @@ use function preg_quote;
  */
 class PropertyLoaderTest extends TestCase
 {
-
     public function testGetRangeSet_RangeSetNotExists_ThrowsException(): void
     {
         $propertyLoader = new PropertyRangeLoader(__DIR__, []);
@@ -41,7 +40,7 @@ class PropertyLoaderTest extends TestCase
         $propertyLoader = new PropertyRangeLoader(__DIR__, ['a' => '/NonExisting.php']);
         $this->expectException(PropertyFileNotLoadedException::class);
         $this->expectExceptionMessageMatches(
-            "#^Failed to load range set for Unicode property 'a' from file .+/NonExisting\.php:\n.+\$#"
+            "#^Failed to load range set for Unicode property 'a' from file .+/NonExisting\.php(:\n.+)?$#"
         );
         $propertyLoader->getRangeSet('a');
     }
@@ -59,9 +58,6 @@ class PropertyLoaderTest extends TestCase
     }
 
     /**
-     * @param string $propertyName
-     * @param int    $rangeIndex
-     * @param int    $codePoint
      * @dataProvider providerGetRangeSet
      */
     public function testGetRangeSet_FileExistsAndReturnsRangeSet_ReturnsMatchingRange(
@@ -77,7 +73,10 @@ class PropertyLoaderTest extends TestCase
         self::assertTrue($ranges[$rangeIndex]->containsValue($codePoint));
     }
 
-    public function providerGetRangeSet(): array
+    /**
+     * @return iterable<string, array{string, int, int}>
+     */
+    public static function providerGetRangeSet(): iterable
     {
         return [
             'Adlam' => ['Adlam', 0, 0x01E900],

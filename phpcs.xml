@@ -4,6 +4,8 @@
 
     <file>src</file>
     <file>tests</file>
+    <file>tools/src</file>
+    <file>tools/tests</file>
 
     <arg name="colors"/>
 
