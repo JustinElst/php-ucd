@@ -50,7 +50,7 @@ final class PropertyBuilder
     private array $rangeBuffer = [];
 
     public function __construct(
-        private PrettyPrinterAbstract $printer,
+        private readonly PrettyPrinterAbstract $printer,
     ) {
         $this->phpBuilder = new BuilderFactory();
     }

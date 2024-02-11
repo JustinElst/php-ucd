@@ -1,6 +1,10 @@
 /vendor/
 /build/
 /composer.lock
+/vendor-bin/**/vendor/
+/vendor-bin/**/composer.lock
+/tools/phar/
+/tools/phive
 /phpunit.xml
 /psalm.xml
 /infection.json

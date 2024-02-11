@@ -10,10 +10,10 @@ use Throwable;
 final class CodePointNameNotParsedException extends LogicException implements ExceptionInterface
 {
     public function __construct(
-        private string $name,
+        private readonly string $name,
         ?Throwable $previous = null,
     ) {
-        parent::__construct("Failed to parse code point name: $name", 0, $previous);
+        parent::__construct("Failed to parse code point name: $name", previous: $previous);
     }
 
     public function getName(): string

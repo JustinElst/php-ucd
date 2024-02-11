@@ -20,7 +20,10 @@ use function strlen;
  */
 final class UnicodeDataRangeIterator implements IteratorAggregate
 {
-    private Closure $onProgress;
+    /**
+     * @var callable
+     */
+    private mixed $onProgress;
 
     private ?int $code = null;
 
@@ -37,10 +40,10 @@ final class UnicodeDataRangeIterator implements IteratorAggregate
     private array $namedStarts = [];
 
     public function __construct(
-        private SplFileObject $file,
+        private readonly SplFileObject $file,
         callable $onProgress,
     ) {
-        $this->onProgress = Closure::fromCallable($onProgress);
+        $this->onProgress = $onProgress;
     }
 
     /**

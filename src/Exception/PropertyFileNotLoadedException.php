@@ -10,22 +10,22 @@ use Throwable;
 final class PropertyFileNotLoadedException extends RuntimeException implements ExceptionInterface
 {
     public function __construct(
-        private string $propertyName,
-        private string $propertyFile,
-        private ?string $errorMessage,
+        private readonly string $propertyName,
+        private readonly string $propertyFile,
+        private readonly ?string $errorMessage,
         ?Throwable $previous = null,
     ) {
-        parent::__construct($this->buildMessage(), 0, $previous);
+        parent::__construct($this->buildMessage(), previous: $previous);
     }
 
     private function buildMessage(): string
     {
         $message =
-            "Failed to load range set for Unicode property '{$this->propertyName}' " .
-            "from file {$this->propertyFile}";
+            "Failed to load range set for Unicode property '$this->propertyName' " .
+            "from file $this->propertyFile";
 
         return isset($this->errorMessage)
-            ? "{$message}:\n{$this->errorMessage}"
+            ? "$message:\n$this->errorMessage"
             : $message;
     }
 

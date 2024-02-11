@@ -11,6 +11,6 @@ final class RangeNotCreatedException extends RuntimeException implements Excepti
 {
     public function __construct(?Throwable $previous = null)
     {
-        parent::__construct("Failed to create range", 0, $previous);
+        parent::__construct("Failed to create range", previous: $previous);
     }
 }

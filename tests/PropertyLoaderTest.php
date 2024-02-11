@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Remorhaz\UCD\Test;
 
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Remorhaz\IntRangeSets\RangeSetInterface;
 use Remorhaz\UCD\Exception\InvalidPropertyConfigException;
@@ -14,9 +16,7 @@ use Remorhaz\UCD\PropertyRangeLoader;
 
 use function preg_quote;
 
-/**
- * @covers \Remorhaz\UCD\PropertyRangeLoader
- */
+#[CoversClass(PropertyRangeLoader::class)]
 class PropertyLoaderTest extends TestCase
 {
     public function testGetRangeSet_RangeSetNotExists_ThrowsException(): void
@@ -52,18 +52,16 @@ class PropertyLoaderTest extends TestCase
         $expectedClass = preg_quote(RangeSetInterface::class, '#');
         $this->expectExceptionMessageMatches(
             "#^Invalid range set loaded from .+ for Unicode property 'a':\n" .
-            "\\S+ instead of {$expectedClass}\$#"
+            "\\S+ instead of $expectedClass\$#"
         );
         $propertyLoader->getRangeSet('a');
     }
 
-    /**
-     * @dataProvider providerGetRangeSet
-     */
+    #[DataProvider('providerGetRangeSet')]
     public function testGetRangeSet_FileExistsAndReturnsRangeSet_ReturnsMatchingRange(
         string $propertyName,
         int $rangeIndex,
-        int $codePoint
+        int $codePoint,
     ): void {
         $propertyLoader = PropertyRangeLoader::create();
         $ranges = $propertyLoader
@@ -159,12 +157,16 @@ class PropertyLoaderTest extends TestCase
             'Hex_Digit' => ['Hex_Digit', 0, 0x30],
             'Hiragana' => ['Hiragana', 0, 0x3041],
             'Hyphen' => ['Hyphen', 0, 0x2D],
+            'ID_Compat_Math_Continue' => ['ID_Compat_Math_Continue', 0, 0xB2],
+            'ID_Compat_Math_Start' => ['ID_Compat_Math_Start', 0, 0x2202],
             'ID_Continue' => ['ID_Continue', 0, 0x30],
             'ID_Start' => ['ID_Start', 0, 0x41],
             'Ideographic' => ['Ideographic', 0, 0x3006],
             'IDS_Binary_Operator' => ['IDS_Binary_Operator', 0, 0x2FF0],
             'IDS_Trinary_Operator' => ['IDS_Trinary_Operator', 0, 0x2FF2],
+            'IDS_Unary_Operator' => ['IDS_Unary_Operator', 0, 0x2FFE],
             'Imperial_Aramaic' => ['Imperial_Aramaic', 0, 0x010840],
+            'InCB' => ['InCB', 0, 0x300],
             'Inherited' => ['Inherited', 0, 0x0300],
             'Inscriptional_Pahlavi' => ['Inscriptional_Pahlavi', 0, 0x010B60],
             'Inscriptional_Parthian' => ['Inscriptional_Parthian', 0, 0x010B40],
@@ -173,6 +175,7 @@ class PropertyLoaderTest extends TestCase
             'Kaithi' => ['Kaithi', 0, 0x011080],
             'Kannada' => ['Kannada', 0, 0x0C80],
             'Katakana' => ['Katakana', 0, 0x30A1],
+            'Kawi' => ['Kawi', 0, 0x11F00],
             'Kayah_Li' => ['Kayah_Li', 0, 0xA900],
             'Kharoshthi' => ['Kharoshthi', 0, 0x010A00],
             'Khitan_Small_Script' => ['Khitan_Small_Script', 0, 0x016FE4],
@@ -222,6 +225,7 @@ class PropertyLoaderTest extends TestCase
             'Myanmar' => ['Myanmar', 0, 0x1000],
             'N' => ['N', 0, 0x30],
             'Nabataean' => ['Nabataean', 0, 0x010880],
+            'Nag_Mundari' => ['Nag_Mundari', 0, 0x1E4D0],
             'Nandinagari' => ['Nandinagari', 0, 0x0119A0],
             'Nd' => ['Nd', 0, 0x30],
             'New_Tai_Lue' => ['New_Tai_Lue', 0, 0x1980],

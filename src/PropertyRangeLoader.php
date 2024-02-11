@@ -30,8 +30,8 @@ final class PropertyRangeLoader implements PropertyRangeLoaderInterface
      * @param array<string, mixed> $index
      */
     public function __construct(
-        private string $path,
-        private array $index,
+        private readonly string $path,
+        private readonly array $index,
     ) {
     }
 
@@ -42,8 +42,8 @@ final class PropertyRangeLoader implements PropertyRangeLoaderInterface
 
     private function loadRangeSet(string $propertyName): RangeSetInterface
     {
-        $file = $this->index[$propertyName]
-            ?? throw new Exception\PropertyRangeSetNotFoundException($propertyName);
+        $file = $this->index[$propertyName] ??
+            throw new Exception\PropertyRangeSetNotFoundException($propertyName);
         if (!is_string($file)) {
             throw new Exception\InvalidPropertyConfigException($propertyName, $file);
         }

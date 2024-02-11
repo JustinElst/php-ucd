@@ -10,10 +10,10 @@ use Throwable;
 final class FileNotWrittenException extends RuntimeException implements ExceptionInterface
 {
     public function __construct(
-        private string $fileName,
+        private readonly string $fileName,
         ?Throwable $previous = null,
     ) {
-        parent::__construct("Failed to write file: $this->fileName", 0, $previous);
+        parent::__construct("Failed to write file: $this->fileName", previous: $previous);
     }
 
     public function getFileName(): string

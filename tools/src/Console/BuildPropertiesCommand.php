@@ -10,6 +10,7 @@ use Remorhaz\UCD\Tool\PropertyBuilder;
 use RuntimeException;
 use SplFileObject;
 use Safe;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Helper\ProgressIndicator;
@@ -20,6 +21,7 @@ use Throwable;
 
 use function is_string;
 
+#[AsCommand('build')]
 final class BuildPropertiesCommand extends Command
 {
     private const OPTION_TARGET_ROOT_PATH = 'target-root-path';
@@ -29,8 +31,6 @@ final class BuildPropertiesCommand extends Command
     private const OPTION_SOURCE_SCRIPTS = 'source-scripts';
     private const OPTION_SOURCE_PROP_LIST = 'source-prop-list';
     private const OPTION_SOURCE_DERIVED_CORE_PROPERTIES = 'source-derived-core-properties';
-
-    protected static $defaultName = 'build';
 
     protected function configure(): void
     {
@@ -105,7 +105,7 @@ final class BuildPropertiesCommand extends Command
         try {
             return Safe\realpath($path);
         } catch (Throwable $e) {
-            throw new LogicException($errorMessage, 0, $e);
+            throw new LogicException($errorMessage, previous: $e);
         }
     }
 

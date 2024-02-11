@@ -10,10 +10,10 @@ use Throwable;
 final class InvalidLineException extends RuntimeException implements ExceptionInterface
 {
     public function __construct(
-        private string $lineText,
+        private readonly string $lineText,
         ?Throwable $previous = null,
     ) {
-        parent::__construct("Invalid line format: $this->lineText", 0, $previous);
+        parent::__construct("Invalid line format: $this->lineText", previous: $previous);
     }
 
     public function getLineText(): string

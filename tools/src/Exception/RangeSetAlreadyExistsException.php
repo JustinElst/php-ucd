@@ -10,9 +10,9 @@ use Throwable;
 final class RangeSetAlreadyExistsException extends LogicException implements ExceptionInterface
 {
     public function __construct(
-        private string $propertyName,
+        private readonly string $propertyName,
         ?Throwable $previous = null,
     ) {
-        parent::__construct("Property '$this->propertyName' already exists", 0, $previous);
+        parent::__construct("Property '$this->propertyName' already exists", previous: $previous);
     }
 }

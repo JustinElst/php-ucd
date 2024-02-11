@@ -10,10 +10,10 @@ use Throwable;
 final class RangeSetNotFoundException extends OutOfRangeException implements ExceptionInterface
 {
     public function __construct(
-        private string $propertyName,
+        private readonly string $propertyName,
         ?Throwable $previous = null,
     ) {
-        parent::__construct("Range set not found for property '$this->propertyName'", 0, $previous);
+        parent::__construct("Range set not found for property '$this->propertyName'", previous: $previous);
     }
 
     public function getPropertyName(): string

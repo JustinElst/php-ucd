@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace Remorhaz\UCD\Tool\Test\Exception;
 
 use Exception;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Remorhaz\UCD\Tool\Exception\InvalidLineException;
 
-/**
- * @covers \Remorhaz\UCD\Tool\Exception\InvalidLineException
- */
+#[CoversClass(InvalidLineException::class)]
 class InvalidLineExceptionTest extends TestCase
 {
     public function testGetMessage_Constructed_ReturnsMatchingValue(): void

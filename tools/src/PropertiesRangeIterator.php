@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Remorhaz\UCD\Tool;
 
-use Closure;
 use Iterator;
 use IteratorAggregate;
 use Remorhaz\IntRangeSets\Range;
@@ -17,13 +16,16 @@ use Throwable;
  */
 final class PropertiesRangeIterator implements IteratorAggregate
 {
-    private Closure $onProgress;
+    /**
+     * @var callable
+     */
+    private mixed $onProgress;
 
     public function __construct(
-        private SplFileObject $file,
+        private readonly SplFileObject $file,
         callable $onProgress,
     ) {
-        $this->onProgress = Closure::fromCallable($onProgress);
+        $this->onProgress = $onProgress;
     }
 
     /**
