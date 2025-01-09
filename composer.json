@@ -28,7 +28,7 @@
   "require": {
     "php": "~8.1.0 || ~8.2.0 || ~8.3.0 || ~8.4.0",
     "nikic/php-parser": "^4.10 || ^5",
-    "remorhaz/int-rangesets": "^0.3"
+    "remorhaz/int-rangesets": "dev-master"
   },
   "require-dev": {
     "bamarni/composer-bin-plugin": "^1.8",
@@ -75,5 +75,11 @@
       "bin-links": false,
       "forward-command": true
     }
-  }
+  },
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "https://github.com/JustinElst/php-int-rangesets"
+    }
+  ]
 }
