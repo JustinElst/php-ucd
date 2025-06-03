@@ -9,4 +9,4 @@ namespace Remorhaz\UCD\Tool\Properties;
 use Remorhaz\IntRangeSets\RangeSet;
 
 /** phpcs:disable Generic.Files.LineLength.TooLong */
-return RangeSet::createUnsafe(...RangeSet::importRanges([0x16fe4], [0x18b00, 0x18cd5], [0x18cff]));
+return RangeSet::createUnsafe(...RangeSet::importRanges([0x10d40, 0x10d65], [0x10d69, 0x10d85], [0x10d8e, 0x10d8f]));
