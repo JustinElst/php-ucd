@@ -28,35 +28,35 @@
   "require": {
     "php": "~8.1.0 || ~8.2.0 || ~8.3.0 || ~8.4.0",
     "nikic/php-parser": "^4.10 || ^5",
-    "remorhaz/int-rangesets": "^0.3"
+    "remorhaz/int-rangesets": "dev-master"
   },
   "require-dev": {
-    "bamarni/composer-bin-plugin": "^1.8",
-    "phpunit/phpunit": "^10.1 || ^11",
+    "infection/infection": "^0.29",
+    "phpunit/php-code-coverage": "^12.3",
+    "phpunit/phpunit": "^11 || ^12",
+    "psalm/plugin-phpunit": "^0.19.5",
+    "squizlabs/php_codesniffer": "^3.13",
     "symfony/console": "^6.1 || ^7",
-    "thecodingmachine/safe": "^2.5"
+    "thecodingmachine/safe": "^3.2",
+    "vimeo/psalm": "^6.12"
   },
   "scripts": {
-    "post-update-cmd": ["@phive-install"],
-    "post-install-cmd": ["@phive-install"],
-    "phive-install": [
-      "`if [ -f tools/phar/phive ]; then echo 'tools/phar/'; fi`phive install --trust-gpg-keys C5095986493B4AA0"
-    ],
     "build": [
       "php tools/bin/PropertyBuilderApp.php",
-      "vendor-bin/cs/vendor/bin/phpcbf -p src/Ranges/ config/ranges.php; if [ $? -eq 1 ]; then exit 0; fi"
+      "vendor/bin/phpcbf -p src/Ranges/ config/ranges.php; if [ $? -eq 1 ]; then exit 0; fi"
     ],
-    "test-cs": "vendor-bin/cs/vendor/bin/phpcs -sp",
+    "test-cs": "vendor/bin/phpcs -sp",
     "test-unit": "vendor/bin/phpunit --coverage-xml=build/logs/coverage-xml --coverage-clover=build/logs/clover.xml --log-junit=build/logs/junit.xml",
-    "test-psalm": "vendor-bin/psalm/vendor/bin/psalm --threads=4 --shepherd",
+    "test-psalm": "vendor/bin/psalm --threads=4 --shepherd",
     "test": [
+      "mkdir -p build/logs/",
       "@test-cs",
       "@test-unit",
       "@test-psalm"
     ],
     "infection": [
       "mkdir -p build/logs/infection",
-      "tools/phar/infection --threads=4 --coverage=build/logs --no-progress --skip-initial-tests"
+      "vendor/bin/infection --threads=4 --coverage=build/logs --no-progress --skip-initial-tests"
     ],
     "test-infection": [
       "@test-unit",
@@ -65,15 +65,14 @@
   },
   "config": {
     "allow-plugins": {
-      "bamarni/composer-bin-plugin": true,
       "infection/extension-installer": true
     },
     "sort-packages": true
   },
-  "extra": {
-    "bamarni-bin": {
-      "bin-links": false,
-      "forward-command": true
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "https://github.com/JustinElst/php-int-rangesets"
     }
-  }
+  ]
 }
