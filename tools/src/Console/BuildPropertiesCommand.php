@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Remorhaz\UCD\Tool\Console;
 
 use LogicException;
+use Override;
 use PhpParser\PrettyPrinter\Standard;
 use Remorhaz\UCD\Tool\PropertyBuilder;
 use RuntimeException;
@@ -32,6 +33,7 @@ final class BuildPropertiesCommand extends Command
     private const OPTION_SOURCE_PROP_LIST = 'source-prop-list';
     private const OPTION_SOURCE_DERIVED_CORE_PROPERTIES = 'source-derived-core-properties';
 
+    #[Override]
     protected function configure(): void
     {
         $this
@@ -117,6 +119,7 @@ final class BuildPropertiesCommand extends Command
         );
     }
 
+    #[Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $output->writeln($this->getApplication()?->getName() ?? 'unknown');
