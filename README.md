@@ -11,10 +11,10 @@ Work in progress.
 For now, this library provides only access to Unicode property ranges.
 
 ## Unicode Version
-The version of UCD used is 15.1.0.
+The version of UCD used is 16.0.0.
 
 ## Requirements
-- PHP 8.1, 8.2, 8.3.
+- PHP 8.1, 8.2, 8.3, 8.4.
 
 ## License
 This library is licensed under [MIT license](./LICENSE).
