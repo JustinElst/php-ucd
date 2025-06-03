@@ -1,9 +1,0 @@
-{
-    "require-dev": {
-        "vimeo/psalm": "dev-master",
-        "psalm/plugin-phpunit": "^0.19.0"
-    },
-    "conflict": {
-        "netresearch/jsonmapper": "<4.4.1"
-    }
-}
