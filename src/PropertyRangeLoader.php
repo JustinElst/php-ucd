@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Remorhaz\UCD;
 
+use Override;
 use Remorhaz\IntRangeSets\RangeSetInterface;
 
 use function error_clear_last;
@@ -35,6 +36,7 @@ final class PropertyRangeLoader implements PropertyRangeLoaderInterface
     ) {
     }
 
+    #[Override]
     public function getRangeSet(string $propertyName): RangeSetInterface
     {
         return $this->cache[$propertyName] ??= $this->loadRangeSet($propertyName);

@@ -7,6 +7,7 @@ namespace Remorhaz\UCD\Tool;
 use Closure;
 use Iterator;
 use IteratorAggregate;
+use Override;
 use Remorhaz\IntRangeSets\Range;
 use Remorhaz\IntRangeSets\RangeInterface;
 use Safe;
@@ -49,6 +50,7 @@ final class UnicodeDataRangeIterator implements IteratorAggregate
     /**
      * @return Iterator<string, RangeInterface>
      */
+    #[Override]
     public function getIterator(): Iterator
     {
         while (!$this->file->eof()) {
